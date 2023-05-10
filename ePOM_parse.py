@@ -92,16 +92,18 @@ def main():
             f"Could not find a perfect match for {nm_first} {nm_last} with DOB {nm_dob}."
         )
         # generate a list of possible matches
-        poss_matches = set()
+        poss_matches = []
         if nm_dob in website_dob_lookup:
             for same_dob in website_dob_lookup[nm_dob]:
-                poss_matches.add(same_dob)
+                poss_matches.append(same_dob)
         nm_epom_parent_email = epom_parent_email_lookup[non_match_student]
         if nm_epom_parent_email in website_lookup_using_parent_email:
             for same_parent_email in website_lookup_using_parent_email[
                 nm_epom_parent_email
             ]:
-                poss_matches.add(same_parent_email)
+                poss_matches.append(same_parent_email)
+        # remove duplicates
+        poss_matches = list(set(poss_matches))
 
         # prompt user to select a match
         prompt_user(poss_matches, username_lookup, get_parent_email_lookup)
