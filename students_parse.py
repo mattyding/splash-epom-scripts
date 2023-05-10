@@ -8,7 +8,7 @@ with open(STUDENT_CSV, "r") as in_f:
     lines = in_f.readlines()
     with open(OUTPUT_CSV, "w+") as out_f:
         for line in lines:
-            _, first, last, student_email, dob, parent_email = line.replace(
+            _, username, first, last, student_email, dob, parent_email = line.replace(
                 '"', ""
             ).split(",")
             try:
