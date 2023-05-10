@@ -42,7 +42,10 @@ def main():
         matched_name_dob_set = set()
         # for finding near-matches
         website_dob_lookup = {}
-        website_parent_email_lookup = {}
+        website_lookup_using_parent_email = {}
+
+        username_lookup = {}
+        get_parent_email_lookup = {}
 
         next(in_f)
         for line in in_f.readlines():
@@ -68,13 +71,15 @@ def main():
             # for finding near-matches
             if dob not in website_dob_lookup:
                 website_dob_lookup[dob] = []
-            website_dob_lookup[dob].append((first, last, dob, parent_email))
+            website_dob_lookup[dob].append((first, last, dob))
 
-            if parent_email not in website_parent_email_lookup:
-                website_parent_email_lookup[parent_email] = []
-            website_parent_email_lookup[parent_email].append(
-                (first, last, dob, parent_email)
-            )
+            if parent_email not in website_lookup_using_parent_email:
+                website_lookup_using_parent_email[parent_email] = []
+
+            username_lookup[(first, last, dob)] = username
+            website_lookup_using_parent_email[parent_email].append((first, last, dob))
+
+            get_parent_email_lookup[(first, last, dob)] = parent_email
 
         in_f.close()
 
@@ -87,27 +92,30 @@ def main():
             f"Could not find a perfect match for {nm_first} {nm_last} with DOB {nm_dob}."
         )
         # generate a list of possible matches
-        poss_matches = []
+        poss_matches = set()
         if nm_dob in website_dob_lookup:
             for same_dob in website_dob_lookup[nm_dob]:
-                poss_matches.append(same_dob)
+                poss_matches.add(same_dob)
         nm_epom_parent_email = epom_parent_email_lookup[non_match_student]
-        if nm_epom_parent_email in website_parent_email_lookup:
-            for same_parent_email in website_parent_email_lookup[nm_epom_parent_email]:
-                poss_matches.append(same_parent_email)
+        if nm_epom_parent_email in website_lookup_using_parent_email:
+            for same_parent_email in website_lookup_using_parent_email[
+                nm_epom_parent_email
+            ]:
+                poss_matches.add(same_parent_email)
 
         # prompt user to select a match
-        prompt_user(poss_matches)
+        prompt_user(poss_matches, username_lookup, get_parent_email_lookup)
         match_indices = [int(num) for num in str(input()).split(" ")]
         # goodness checks
         while not user_input_valid(match_indices, poss_matches):
             print("Invalid input. Please try again.")
-            prompt_user(poss_matches)
+            prompt_user(poss_matches, username_lookup, get_parent_email_lookup)
             match_indices = [int(num) for num in str(input()).split(" ")]
 
         for match in match_indices:
-            approved_usernames.append(poss_matches[match][1])
-            print(f"Matched {non_match_student} to username {poss_matches[match][1]}.")
+            matched_username = username_lookup[poss_matches[match]]
+            approved_usernames.append(matched_username)
+            print(f"Matched {non_match_student} to username {matched_username}.")
 
     with open(OUTPUT_CSV, "w+") as out_f:
         out_f.write(",".join(set(approved_usernames)))
@@ -115,10 +123,12 @@ def main():
     print(f"Approved emails written to {OUTPUT_CSV}.")
 
 
-def prompt_user(poss_matches):
+def prompt_user(poss_matches, username_lookup, get_parent_email_lookup):
     print("Possible matches:")
     for i, match in enumerate(poss_matches):
-        print(f"{i}: {match}, username: {match[1]}")
+        print(
+            f"{i}: {match}, username: {username_lookup[match]}, parent email: {get_parent_email_lookup[match]}"
+        )
     # add option for none
     print(f"{len(poss_matches)}: None of the above.")
     print(
