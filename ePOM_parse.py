@@ -38,18 +38,18 @@ def main():
 
     # cross-check with student CSV downloaded from stanfordesp
     with open(STUDENT_CSV, "r") as in_f:
-        approved_usernames = []
+        approved_ids = []
         matched_name_dob_set = set()
         # for finding near-matches
         website_dob_lookup = {}
         website_lookup_using_parent_email = {}
 
-        username_lookup = {}
+        id_lookup = {}
         get_parent_email_lookup = {}
 
         next(in_f)
         for line in in_f.readlines():
-            _, username, first, last, student_email, dob, parent_email = line.replace(
+            _, id, first, last, student_email, dob, parent_email = line.replace(
                 '"', ""
             ).split(",")
             first = first.strip()
@@ -65,7 +65,7 @@ def main():
 
             # perfect match = name + dob perfectly match a record
             if (first, last, dob) in epom_name_bod_set:
-                approved_usernames.append(username)
+                approved_ids.append(id)
                 matched_name_dob_set.add((first, last, dob))
 
             # for finding near-matches
@@ -76,14 +76,14 @@ def main():
             if parent_email not in website_lookup_using_parent_email:
                 website_lookup_using_parent_email[parent_email] = []
 
-            username_lookup[(first, last, dob)] = username
+            id_lookup[(first, last, dob)] = id
             website_lookup_using_parent_email[parent_email].append((first, last, dob))
 
             get_parent_email_lookup[(first, last, dob)] = parent_email
 
         in_f.close()
 
-    print(f"Perfectly matched {len(approved_usernames)} students to their usernames.")
+    print(f"Perfectly matched {len(approved_ids)} students to their ids.")
 
     for non_match_student in epom_name_bod_set - matched_name_dob_set:
         nm_first, nm_last, nm_dob = non_match_student
@@ -106,33 +106,33 @@ def main():
         poss_matches = list(set(poss_matches))
 
         # prompt user to select a match
-        prompt_user(poss_matches, username_lookup, get_parent_email_lookup)
+        prompt_user(poss_matches, id_lookup, get_parent_email_lookup)
         match_indices = [int(num) for num in str(input()).split(" ")]
         # goodness checks
         while not user_input_valid(match_indices, poss_matches):
             print("Invalid input. Please try again.")
-            prompt_user(poss_matches, username_lookup, get_parent_email_lookup)
+            prompt_user(poss_matches, id_lookup, get_parent_email_lookup)
             match_indices = [int(num) for num in str(input()).split(" ")]
 
         for match in match_indices:
             if match == len(poss_matches):
                 print(f"Skipped {non_match_student}.")
                 continue
-            matched_username = username_lookup[poss_matches[match]]
-            approved_usernames.append(matched_username)
-            print(f"Matched {non_match_student} to username {matched_username}.")
+            matched_id = id_lookup[poss_matches[match]]
+            approved_ids.append(matched_id)
+            print(f"Matched {non_match_student} to id {matched_id}.")
 
     with open(OUTPUT_CSV, "w+") as out_f:
-        out_f.write(",".join(set(approved_usernames)))
+        out_f.write(",".join(set(approved_ids)))
 
     print(f"Approved emails written to {OUTPUT_CSV}.")
 
 
-def prompt_user(poss_matches, username_lookup, get_parent_email_lookup):
+def prompt_user(poss_matches, id_lookup, get_parent_email_lookup):
     print("Possible matches:")
     for i, match in enumerate(poss_matches):
         print(
-            f"{i}: {match}, username: {username_lookup[match]}, parent email: {get_parent_email_lookup[match]}"
+            f"{i}: {match}, id: {id_lookup[match]}, parent email: {get_parent_email_lookup[match]}"
         )
     # add option for none
     print(f"{len(poss_matches)}: None of the above.")

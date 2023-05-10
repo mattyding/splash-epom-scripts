@@ -3,7 +3,7 @@
 - Basic List/Students
 - All students in the database -> Add Filters -> User Groups -> Select group(s) to include/Splash {EVENT} Winners
 - Include only the following options and uncheck all else:
-    - Username
+    - ID
     - First Name
     - Last Name
     - Email
