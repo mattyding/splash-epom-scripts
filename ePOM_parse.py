@@ -89,7 +89,7 @@ def main():
         nm_first, nm_last, nm_dob = non_match_student
 
         print(
-            f"Could not find a perfect match for {nm_first} {nm_last} with DOB {nm_dob}."
+            f"\nCould not find a perfect match for {nm_first} {nm_last} with DOB {nm_dob}."
         )
         # generate a list of possible matches
         poss_matches = []
@@ -115,6 +115,9 @@ def main():
             match_indices = [int(num) for num in str(input()).split(" ")]
 
         for match in match_indices:
+            if match == len(poss_matches):
+                print(f"Skipped {non_match_student}.")
+                continue
             matched_username = username_lookup[poss_matches[match]]
             approved_usernames.append(matched_username)
             print(f"Matched {non_match_student} to username {matched_username}.")
