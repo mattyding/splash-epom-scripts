@@ -3,8 +3,25 @@ STUDENT_CSV = "spr23_students.csv"  # downloaded from stanfordesp
 OUTPUT_CSV = "ePOM_parsed.csv"
 CLEARED_EPOM_ENTRIES = "cleared_epom_entries.csv"
 
+DEBUG = True
+
 
 def main():
+    check_parsing_issues()
+    run_program()
+
+
+def check_parsing_issues():
+    # there's an invalid byte. figure out which entry it corresponds to and delete it
+    with open(ePOM_CSV, "r") as in_f:
+        next(in_f)
+        line = in_f.readline()
+        while line:
+            print(line.strip())
+            line = in_f.readline()
+
+
+def run_program():
     with open(ePOM_CSV, "r") as in_f:
         next(in_f)
         epom_name_bod_set = set()
